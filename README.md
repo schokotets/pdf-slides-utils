@@ -14,3 +14,11 @@ This utility removes the "animation" (step-by-step reveal) slides from a pdf.
 Run it via: `./pdfdeanimate-image.py pdffile.pdf`
 
 The output will be `stripped-pdffile.pdf`.
+
+## pdf2msvg.sh
+
+This utility converts each page of a pdf into a minimized 720-width svg.
+
+Run it via: `./pdf2msvg pdffile.pdf [program_to_open_svg_with]`
+
+The output will be `pdffile-pages/pdffile-pageNNN.svg`.
