@@ -22,7 +22,7 @@ The output will be `stripped-pdffile.pdf`.
 
 This utility converts each page of a pdf into a minimized 720-width svg.
 
-It was created for embedding single pdf pages into Notion, in order to add text notes between pages. If you're looking for a simple image viewer to open the svgs in that has drag-and-drop support, I can recommend [https://wiki.gnome.org/Apps/EyeOfGnome](Eye of GNOME (eog)).
+It was created for embedding single pdf pages into Notion, in order to add text notes between pages. If you're looking for a simple image viewer to open the svgs in that has drag-and-drop support, I can recommend [Eye of GNOME (`eog`)](https://wiki.gnome.org/Apps/EyeOfGnome).
 
 Run the utility via: `./pdf2msvg.sh pdffile.pdf [program_to_open_svg_with]`
 
