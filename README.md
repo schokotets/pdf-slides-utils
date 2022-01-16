@@ -1,5 +1,8 @@
 # pdf-slides-utils
+
 a collection of (linux) utility scripts to deal with pdf presentations at uni
+
+Feel free to contribute: send pull request / open up issues. While these utils were created for my personal use, I thought others (e.g. uni students) could make use of them as well. The better the feature set and system support, the better the aid :)
 
 When `nix-shell` is installed, dependencies should be automatically downloaded on script execution. I assume the user has `nix-shell` installed when listing run commands.
 
