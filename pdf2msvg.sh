@@ -1,7 +1,7 @@
 #!/usr/bin/env nix-shell
 #!nix-shell -i sh -p pdf2svg nodePackages.svgo parallel perl python38
 
-# usage: ./pdf2msvg pdffile [open_program]
+# usage: ./pdf2msvg.sh pdffile.pdf [program_to_open_svg_with]
 
 set -e
 
