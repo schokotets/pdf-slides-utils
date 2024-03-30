@@ -6,13 +6,14 @@ import sys
 import os
 import glob
 import numpy
+from pathlib import Path
 from PIL import Image, ImageOps
 
-pdffile = sys.argv[1]
-pdffile_name = pdffile.rsplit(".",1)[0]
+pdffile = Path(sys.argv[1])
+pdffile_name = os.path.splitext(pdffile.name)[0]
 
-pgmdir_name = pdffile_name+"-pgm"
-pgmfile_name = pgmdir_name+"/"+pdffile_name
+pgmdir_name = pdffile.parent/(pdffile_name+"-pgm")
+pgmfile_name = pgmdir_name/pdffile_name
 
 try:
     os.mkdir(pgmdir_name)
@@ -48,5 +49,5 @@ for filename in sorted(filelist, key=lambda s: s.lower()):
 containpages.append(currenthold)
 
 print(f"reduced {len(filelist)}-pages pdf to {len(containpages)}-pages pdf")
-
-subprocess.run(["pdftk", pdffile, "cat"] + containpages + ["output", "stripped-"+pdffile])
+output_pdffile = pdffile.parent/("stripped-"+pdffile.name)
+subprocess.run(["pdftk", pdffile, "cat"] + containpages + ["output", output_pdffile])
