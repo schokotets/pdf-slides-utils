@@ -8,6 +8,8 @@ When `nix-shell` is installed, dependencies should be automatically downloaded o
 
 ## pdfdeanimate-image.py
 
+The dependencies for this script can also be installed via `pip install -r requirements.txt`.
+
 This utility removes the "animation" (step-by-step reveal) slides from a pdf.
 
 - It takes a pdf file that was exported from a presentation.
