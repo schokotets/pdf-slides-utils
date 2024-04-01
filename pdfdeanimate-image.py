@@ -1,5 +1,5 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p poppler_utils pdftk python38 python38Packages.numpy python38Packages.pillow
+#!nix-shell -i python3 -p python38 python38Packages.numpy
 
 import sys
 import numpy
@@ -11,7 +11,6 @@ input_pdf_doc = PdfDocument(input_pdf_path)
 
 lastpix = None
 containpages = []
-currenthold = -1
 
 for page_i, page in enumerate(input_pdf_doc):
     pix = page.render(grayscale=True).to_numpy()
