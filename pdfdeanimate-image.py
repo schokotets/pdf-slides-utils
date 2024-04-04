@@ -1,5 +1,4 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p python38 python38Packages.numpy
+#!/usr/bin/env python3
 
 import sys
 import numpy
