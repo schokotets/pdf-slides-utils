@@ -1,53 +1,29 @@
 #!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p poppler_utils pdftk python38 python38Packages.numpy python38Packages.pillow
+#!nix-shell -i python3 -p python38 python38Packages.numpy
 
-import subprocess
 import sys
-import os
-import glob
 import numpy
 from pathlib import Path
-from PIL import Image, ImageOps
+from pypdfium2 import PdfDocument
 
-pdffile = Path(sys.argv[1])
-pdffile_name = os.path.splitext(pdffile.name)[0]
-
-pgmdir_name = pdffile.parent/(pdffile_name+"-pgm")
-pgmfile_name = pgmdir_name/pdffile_name
-
-try:
-    os.mkdir(pgmdir_name)
-    subprocess.run(["pdftoppm", "-gray", pdffile, pgmfile_name], stderr=subprocess.DEVNULL)
-    print("converted pdf to pgm files")
-except FileExistsError:
-    print("assuming pdf is already converted to pgm")
-
+input_pdf_path = Path(sys.argv[1])
+input_pdf_doc = PdfDocument(input_pdf_path)
 
 lastpix = None
-haslastpix = False
-
 containpages = []
-currenthold = -1
 
-filelist = glob.glob(os.path.join(pgmdir_name, '*.pgm'))
-for filename in sorted(filelist, key=lambda s: s.lower()):
-    pagenr = filename.rsplit("/",1)[-1].rsplit(".",1)[0].rsplit("-",1)[-1]
+for page_i, page in enumerate(input_pdf_doc):
+    pix = page.render(grayscale=True).to_numpy()
 
-    img = Image.open(filename)
-    pix = numpy.array(img)
-    img.close()
-
-    if haslastpix:
+    if lastpix is not None:
         isconsecutive = numpy.all(lastpix >= pix)
         if not isconsecutive:
-            containpages.append(currenthold)
+            containpages.append(page_i - 1)
 
     lastpix = pix
-    haslastpix = True
-    currenthold = pagenr
+containpages.append(page_i)
 
-containpages.append(currenthold)
-
-print(f"reduced {len(filelist)}-pages pdf to {len(containpages)}-pages pdf")
-output_pdffile = pdffile.parent/("stripped-"+pdffile.name)
-subprocess.run(["pdftk", pdffile, "cat"] + containpages + ["output", output_pdffile])
+print(f"reduced {len(input_pdf_doc)}-pages pdf to {len(containpages)}-pages pdf")
+output_pdf_doc = PdfDocument.new()
+output_pdf_doc.import_pages(input_pdf_doc, containpages)
+output_pdf_doc.save(input_pdf_path.with_name("stripped-" + input_pdf_path.name))
