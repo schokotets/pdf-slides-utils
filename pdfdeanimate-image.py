@@ -1,28 +1,61 @@
 #!/usr/bin/env python3
-
-import sys
+import subprocess
+import os
+import glob
 import numpy
+from PIL import Image
+import sys
 from pathlib import Path
-from pypdfium2 import PdfDocument
 
-input_pdf_path = Path(sys.argv[1])
-input_pdf_doc = PdfDocument(input_pdf_path)
+def process_pdf(pdffile_path):
+    pdffile_path = Path(pdffile_path)
+    pdffile_name = pdffile_path.stem
+    pgmdir_name = pdffile_name + "-pgm"
+    pgmfile_name = pgmdir_name + "/" + pdffile_name
 
-lastpix = None
-containpages = []
+    try:
+        os.mkdir(pgmdir_name)
+        subprocess.run(["pdftoppm", "-gray", str(pdffile_path), pgmfile_name], stderr=subprocess.DEVNULL)
+        print(f"converted {pdffile_path} to pgm files")
+    except FileExistsError:
+        print("assuming pdf is already converted to pgm")
 
-for page_i, page in enumerate(input_pdf_doc):
-    pix = page.render(grayscale=True).to_numpy()
+    lastpix = None
+    haslastpix = False
+    containpages = []
+    currenthold = 0
 
-    if lastpix is not None:
-        isconsecutive = numpy.all(lastpix >= pix)
-        if not isconsecutive:
-            containpages.append(page_i - 1)
+    filelist = glob.glob(os.path.join(pgmdir_name, '*.pgm'))
+    total_pages = len(filelist)
 
-    lastpix = pix
-containpages.append(page_i)
+    for filename in sorted(filelist, key=lambda s: s.lower()):
+        pagenr = int(filename.rsplit("/", 1)[-1].rsplit(".", 1)[0].rsplit("-", 1)[-1])
+        img = Image.open(filename)
+        pix = numpy.array(img)
+        img.close()
 
-print(f"reduced {len(input_pdf_doc)}-pages pdf to {len(containpages)}-pages pdf")
-output_pdf_doc = PdfDocument.new()
-output_pdf_doc.import_pages(input_pdf_doc, containpages)
-output_pdf_doc.save(input_pdf_path.with_name("stripped-" + input_pdf_path.name))
+        if haslastpix:
+            isconsecutive = numpy.all(lastpix >= pix)
+            if not isconsecutive:
+                containpages.append(currenthold)
+
+        lastpix = pix
+        haslastpix = True
+        currenthold = pagenr
+
+    if currenthold <= total_pages:
+        containpages.append(currenthold)
+
+    print(f"reduced {total_pages}-page PDF to {len(containpages)} pages")
+    containpages_str = [str(page) for page in containpages]  # Convert page numbers to strings without incrementing
+    subprocess.run(["pdftk", str(pdffile_path), "cat"] + containpages_str + ["output", "stripped-" + pdffile_path.name])
+
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        # Process PDF files specified as command line arguments
+        for pdffile_path in sys.argv[1:]:
+            process_pdf(pdffile_path)
+    else:
+        # Process all PDF files in the current directory
+        for pdffile_path in Path.cwd().glob('*.pdf'):
+            process_pdf(str(pdffile_path))
